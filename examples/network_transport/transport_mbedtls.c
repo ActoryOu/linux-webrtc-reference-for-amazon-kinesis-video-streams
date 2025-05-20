@@ -573,7 +573,9 @@ static TlsTransportStatus_t tlsHandshake( NetworkContext_t * pNetworkContext,
         }
         else
         {
+            LogInfo( ( "Start TLS Handshaking" ) );
             returnStatus = TLS_FreeRTOS_ContinueHandshake( pNetworkContext );
+            LogInfo( ( "End TLS Handshaking" ) );
         }
 
         if( returnStatus ==  TLS_TRANSPORT_HANDSHAKE_FAILED )

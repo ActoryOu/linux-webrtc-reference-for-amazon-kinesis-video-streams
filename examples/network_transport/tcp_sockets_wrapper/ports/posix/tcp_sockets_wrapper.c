@@ -159,6 +159,7 @@ int32_t TCP_Sockets_Send( Socket_t xSocket,
     assert( xSocket != NULL );
     assert( pvBuffer != NULL );
 
+    LogInfo( ( "TCP Writing %ld Bytes", xBufferLength ) );
     xWriteRet = write( xSocket->xFd, pvBuffer, xBufferLength );
     if( xWriteRet >= 0 )
     {
@@ -217,6 +218,7 @@ int32_t TCP_Sockets_Recv( Socket_t xSocket,
     if( xReadRet >= 0 )
     {
         xReturnStatus = xReadRet;
+        LogInfo( ( "TCP Read %d Bytes", xReadRet ) );
     }
     else
     {
