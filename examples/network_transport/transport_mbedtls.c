@@ -40,6 +40,7 @@
 
 /* TLS transport header. */
 #include "transport_mbedtls.h"
+#include "metric.h"
 
 /*-----------------------------------------------------------*/
 
@@ -733,11 +734,13 @@ TlsTransportStatus_t TLS_FreeRTOS_Connect( NetworkContext_t * pNetworkContext,
         /* Initialize tcpSocket. */
         pTlsTransportParams->tcpSocket = NULL;
 
+        Metric_StartEvent( METRIC_EVENT_HANDLE_TCP_CONNECT );
         socketStatus = TCP_Sockets_Connect( &( pTlsTransportParams->tcpSocket ),
                                             pHostName,
                                             port,
                                             receiveTimeoutMs,
                                             sendTimeoutMs );
+        Metric_EndEvent( METRIC_EVENT_HANDLE_TCP_CONNECT );
 
         if( socketStatus != 0 )
         {
@@ -768,7 +771,9 @@ TlsTransportStatus_t TLS_FreeRTOS_Connect( NetworkContext_t * pNetworkContext,
     {
         isTlsSetup = 1;
 
+        Metric_StartEvent( METRIC_EVENT_HANDLE_TLS_HANDSHAKE );
         returnStatus = tlsHandshake( pNetworkContext, pNetworkCredentials, flags );
+        Metric_EndEvent( METRIC_EVENT_HANDLE_TLS_HANDSHAKE );
     }
 
     /* Clean up on failure. */

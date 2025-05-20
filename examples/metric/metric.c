@@ -77,6 +77,129 @@ static const char * ConvertEventToString( MetricEvent_t event )
         case METRIC_EVENT_SENDING_FIRST_FRAME:
             pRet = "First Frame";
             break;
+        case METRIC_EVENT_HANDLE_SDP_OFFER:
+            pRet = "Handle SDP Offer";
+            break;
+        case METRIC_EVENT_HANDLE_EXTRACT_SDP_OFFER:
+            pRet = "Extract SDP Offer";
+            break;
+        case METRIC_EVENT_HANDLE_DESERIALIZE_SDP_OFFER:
+            pRet = "Deserialize SDP Offer";
+            break;
+        case METRIC_EVENT_HANDLE_START_PEER_CONNECTION:
+            pRet = "Start Peer Connection";
+            break;
+        case METRIC_EVENT_HANDLE_SET_REMOTE_DESCRIPTION:
+            pRet = "Set Remote Description";
+            break;
+        case METRIC_EVENT_HANDLE_SET_LOCAL_DESCRIPTION:
+            pRet = "Set Local Description";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SDP_ANSWER:
+            pRet = "Create SDP Answer";
+            break;
+        case METRIC_EVENT_HANDLE_SERIALIZE_SDP_ANSWER:
+            pRet = "Serialize SDP Answer";
+            break;
+        case METRIC_EVENT_HANDLE_SEND_SDP_ANSWER:
+            pRet = "Send SDP Answer";
+            break;
+        case METRIC_EVENT_HANDLE_PC_DESERIALIZE_SDP_OFFER:
+            pRet = "Deserialize Peer Connection SDP Offer";
+            break;
+        case METRIC_EVENT_HANDLE_SET_PAYLOAD_TYPES:
+            pRet = "Set Payload Types";
+            break;
+        case METRIC_EVENT_HANDLE_START_ICE_CONTROLLER:
+            pRet = "Start ICE Controller";
+            break;
+        case METRIC_EVENT_HANDLE_INIT_RTP:
+            pRet = "Init RTP Library";
+            break;
+        case METRIC_EVENT_HANDLE_INIT_RTCP:
+            pRet = "Init RTCP Library";
+            break;
+        case METRIC_EVENT_HANDLE_WRITE_STARTUP_BARRIER:
+            pRet = "Write StartUp Barrier";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_REMOTE_CANDIDATES:
+            pRet = "Add Remote Candidates";
+            break;
+        case METRIC_EVENT_HANDLE_INIT_ICE:
+            pRet = "Init ICE Library";
+            break;
+        case METRIC_EVENT_HANDLE_FREE_SOCKET_CONTEXTS:
+            pRet = "Free Socket Contexts";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_LOCAL_CANDIDATES:
+            pRet = "Add Local Candidates";
+            break;
+        case METRIC_EVENT_HANDLE_START_POLLING:
+            pRet = "Start Polling";
+            break;
+        case METRIC_EVENT_HANDLE_ON_TIMER_EXPIRE:
+            pRet = "On Timer Expire";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATES:
+            pRet = "Add Relay Candidates";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_0:
+            pRet = "Add Relay Candidate 0";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_1:
+            pRet = "Add Relay Candidate 1";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_2:
+            pRet = "Add Relay Candidate 2";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_3:
+            pRet = "Add Relay Candidate 3";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_4:
+            pRet = "Add Relay Candidate 4";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_5:
+            pRet = "Add Relay Candidate 5";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_6:
+            pRet = "Add Relay Candidate 6";
+            break;
+        case METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_7:
+            pRet = "Add Relay Candidate 7";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_0:
+            pRet = "Create Socket Context 0";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_1:
+            pRet = "Create Socket Context 1";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_2:
+            pRet = "Create Socket Context 2";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_3:
+            pRet = "Create Socket Context 3";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_4:
+            pRet = "Create Socket Context 4";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_5:
+            pRet = "Create Socket Context 5";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_6:
+            pRet = "Create Socket Context 6";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_7:
+            pRet = "Create Socket Context 7";
+            break;
+        case METRIC_EVENT_HANDLE_CREATE_TCP_CONNECTION:
+            pRet = "Create TCP Connection";
+            break;
+        case METRIC_EVENT_HANDLE_TCP_CONNECT:
+            pRet = "Complete TCP Connect";
+            break;
+        case METRIC_EVENT_HANDLE_TLS_HANDSHAKE:
+            pRet = "Start TLS Handshaking";
+            break;
         default:
             pRet = "Unknown";
             break;

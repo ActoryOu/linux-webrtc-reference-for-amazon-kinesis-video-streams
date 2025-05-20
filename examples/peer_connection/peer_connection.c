@@ -1773,6 +1773,7 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
     /* Use SDP controller to parse SDP message into data structure. */
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_PC_DESERIALIZE_SDP_OFFER );
         pTargetRemoteSdp = &pSession->remoteSessionDescription;
         memset( pTargetRemoteSdp,
                 0,
@@ -1785,13 +1786,16 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
                 pTargetRemoteSdp->sdpBufferLength );
 
         ret = PeerConnectionSdp_DeserializeSdpMessage( pTargetRemoteSdp );
+        Metric_EndEvent( METRIC_EVENT_HANDLE_PC_DESERIALIZE_SDP_OFFER );
     }
 
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_SET_PAYLOAD_TYPES );
         /* Update codec information based on transceivers. */
         ret = PeerConnectionSdp_SetPayloadTypes( pSession,
                                                  pTargetRemoteSdp );
+        Metric_EndEvent( METRIC_EVENT_HANDLE_SET_PAYLOAD_TYPES );
     }
 
     if( ret == PEER_CONNECTION_RESULT_OK )
@@ -1817,6 +1821,7 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
 
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_START_ICE_CONTROLLER );
         memcpy( pSession->remoteUserName,
                 pTargetRemoteSdp->sdpDescription.quickAccess.pIceUfrag,
                 pTargetRemoteSdp->sdpDescription.quickAccess.iceUfragLength );
@@ -1854,26 +1859,31 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
             LogWarn( ( "IceController_Start fail, result: %d.", iceControllerResult ) );
             ret = PEER_CONNECTION_RESULT_FAIL_ICE_CONTROLLER_START;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_START_ICE_CONTROLLER );
     }
 
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_INIT_RTP );
         resultRtp = Rtp_Init( &peerConnectionContext.rtpContext );
         if( resultRtp != RTP_RESULT_OK )
         {
             LogError( ( "Fail to initialize RTP context, result: %d", resultRtp ) );
             ret = PEER_CONNECTION_RESULT_FAIL_RTP_INIT;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_INIT_RTP );
     }
 
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_INIT_RTCP );
         resultRtcp = Rtcp_Init( &peerConnectionContext.rtcpContext );
         if( resultRtcp != RTCP_RESULT_OK )
         {
             LogError( ( "Fail to initialize RTCP context, result: %d", resultRtcp ) );
             ret = PEER_CONNECTION_RESULT_FAIL_RTCP_INIT;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_INIT_RTCP );
     }
 
     if( ret == PEER_CONNECTION_RESULT_OK )
@@ -1887,6 +1897,7 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
 
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_WRITE_STARTUP_BARRIER );
         pSession->state = PEER_CONNECTION_SESSION_STATE_FIND_CONNECTION;
 
         retWrite = write( pSession->startupBarrier,
@@ -1897,10 +1908,12 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
             LogError( ( "Fail to signal start up barrier, errno(%d): %s.", errno, strerror( errno ) ) );
             ret = PEER_CONNECTION_RESULT_FAIL_SIGNAL_STARTUP_BARRIER;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_WRITE_STARTUP_BARRIER );
     }
 
     if( ret == PEER_CONNECTION_RESULT_OK )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_ADD_REMOTE_CANDIDATES );
         LogVerbose( ( "REMOTE Candidates Count : %d", pTargetRemoteSdp->sdpDescription.quickAccess.remoteCandidateCount ) );
 
         if( pTargetRemoteSdp->sdpDescription.quickAccess.remoteCandidateCount != 0 )
@@ -1929,6 +1942,7 @@ PeerConnectionResult_t PeerConnection_SetRemoteDescription( PeerConnectionSessio
                 }
             }
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_ADD_REMOTE_CANDIDATES );
     }
 
     return ret;

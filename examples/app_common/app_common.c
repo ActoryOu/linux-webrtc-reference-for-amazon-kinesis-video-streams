@@ -860,6 +860,7 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_EXTRACT_SDP_OFFER );
         /* Get the SDP content in pSdpOfferMessage. */
         signalingControllerReturn = SignalingController_ExtractSdpOfferFromSignalingMessage( pSignalingMessage->pMessage,
                                                                                              pSignalingMessage->messageLength,
@@ -874,10 +875,12 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
                         pSignalingMessage->pMessage ) );
             skipProcess = 1;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_EXTRACT_SDP_OFFER );
     }
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_DESERIALIZE_SDP_OFFER );
         /* Translate the newline into SDP formal format. The end pattern from signaling event message is "\\n" or "\\r\\n",
          * so we replace that with "\n" by calling this function. Note that this doesn't support inplace replacement. */
         formalSdpMessageLength = PEER_CONNECTION_SDP_DESCRIPTION_BUFFER_MAX_LENGTH;
@@ -894,10 +897,12 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
                         pSignalingMessage->pMessage ) );
             skipProcess = 1;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_DESERIALIZE_SDP_OFFER );
     }
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_START_PEER_CONNECTION );
         pAppSession = GetCreatePeerConnectionSession( pAppContext,
                                                      pSignalingMessage->pRemoteClientId,
                                                      pSignalingMessage->remoteClientIdLength,
@@ -910,10 +915,12 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
                        pSignalingMessage->pRemoteClientId ) );
             skipProcess = 1;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_START_PEER_CONNECTION );
     }
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_SET_REMOTE_DESCRIPTION );
         bufferSessionDescription.pSdpBuffer = pAppContext->sdpBuffer;
         bufferSessionDescription.sdpBufferLength = formalSdpMessageLength;
         bufferSessionDescription.type = SDP_CONTROLLER_MESSAGE_TYPE_OFFER;
@@ -923,6 +930,7 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
         {
             LogWarn( ( "PeerConnection_SetRemoteDescription fail, result: %d, dropping ICE candidate.", peerConnectionResult ) );
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_SET_REMOTE_DESCRIPTION );
     }
 
     if( skipProcess == 0 )
@@ -951,6 +959,7 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_SET_LOCAL_DESCRIPTION );
         memset( &bufferSessionDescription, 0, sizeof( PeerConnectionBufferSessionDescription_t ) );
         bufferSessionDescription.pSdpBuffer = pAppContext->sdpBuffer;
         bufferSessionDescription.sdpBufferLength = PEER_CONNECTION_SDP_DESCRIPTION_BUFFER_MAX_LENGTH;
@@ -961,10 +970,12 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
             LogWarn( ( "PeerConnection_SetLocalDescription fail, result: %d.", peerConnectionResult ) );
             skipProcess = 1;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_SET_LOCAL_DESCRIPTION );
     }
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_CREATE_SDP_ANSWER );
         pAppContext->sdpConstructedBufferLength = PEER_CONNECTION_SDP_DESCRIPTION_BUFFER_MAX_LENGTH;
         peerConnectionResult = PeerConnection_CreateAnswer( &pAppSession->peerConnectionSession,
                                                             &bufferSessionDescription,
@@ -975,10 +986,12 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
             LogWarn( ( "PeerConnection_CreateAnswer fail, result: %d.", peerConnectionResult ) );
             skipProcess = 1;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_CREATE_SDP_ANSWER );
     }
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_SERIALIZE_SDP_ANSWER );
         /* Translate from SDP formal format into signaling event message by replacing newline with "\\n" or "\\r\\n". */
         sdpAnswerMessageLength = PEER_CONNECTION_SDP_DESCRIPTION_BUFFER_MAX_LENGTH;
         signalingControllerReturn = SignalingController_SerializeSdpContentNewline( pAppContext->sdpConstructedBuffer,
@@ -994,10 +1007,12 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
                         pAppContext->sdpConstructedBuffer ) );
             skipProcess = 1;
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_SERIALIZE_SDP_ANSWER );
     }
 
     if( skipProcess == 0 )
     {
+        Metric_StartEvent( METRIC_EVENT_HANDLE_SEND_SDP_ANSWER );
         signalingMessageSdpAnswer.correlationIdLength = 0U;
         signalingMessageSdpAnswer.pCorrelationId = NULL;
         signalingMessageSdpAnswer.messageType = SIGNALING_TYPE_MESSAGE_SDP_ANSWER;
@@ -1013,6 +1028,7 @@ static void HandleSdpOffer( AppContext_t * pAppContext,
             skipProcess = 1;
             LogError( ( "Send signaling message fail, result: %d", signalingControllerReturn ) );
         }
+        Metric_EndEvent( METRIC_EVENT_HANDLE_SEND_SDP_ANSWER );
     }
 }
 
@@ -1212,8 +1228,10 @@ static int OnSignalingMessageReceived( SignalingMessage_t * pSignalingMessage,
             #if METRIC_PRINT_ENABLED
             Metric_StartEvent( METRIC_EVENT_SENDING_FIRST_FRAME );
             #endif
+            Metric_StartEvent( METRIC_EVENT_HANDLE_SDP_OFFER );
             HandleSdpOffer( pAppContext,
                             pSignalingMessage );
+            Metric_EndEvent( METRIC_EVENT_HANDLE_SDP_OFFER );
             break;
         case SIGNALING_TYPE_MESSAGE_SDP_ANSWER:
             break;

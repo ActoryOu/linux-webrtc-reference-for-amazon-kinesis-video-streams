@@ -270,6 +270,8 @@ static IceControllerResult_t CreateSocketContextTcp( IceControllerContext_t * pC
     const char * pRemoteIpPos;
     char remoteIpAddr[ INET_ADDRSTRLEN ];
 
+    Metric_StartEvent( METRIC_EVENT_HANDLE_CREATE_TCP_CONNECTION );
+    
     pRemoteIpPos = inet_ntop( AF_INET,
                               pConnectEndpoint->transportAddress.address,
                               remoteIpAddr,
@@ -359,6 +361,7 @@ static IceControllerResult_t CreateSocketContextTcp( IceControllerContext_t * pC
         pSocketContext->socketType = ICE_CONTROLLER_SOCKET_TYPE_TLS;
         *ppOutSocketContext = pSocketContext;
     }
+    Metric_EndEvent( METRIC_EVENT_HANDLE_CREATE_TCP_CONNECTION );
 
     return ret;
 }
@@ -712,6 +715,7 @@ static void AddRelayCandidates( IceControllerContext_t * pCtx )
         /* Loop through all ICE server configs and start allocate TURN with UDP and TLS TURN servers. */
         for( i = 0; i < pCtx->iceServersCount; i++ )
         {
+            Metric_StartEvent( METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_0 + i );
             /* Reset ret for every round. */
             ret = ICE_CONTROLLER_RESULT_OK;
 
@@ -763,7 +767,9 @@ static void AddRelayCandidates( IceControllerContext_t * pCtx )
                            pCtx->iceServers[i].protocol == ICE_SOCKET_PROTOCOL_UDP ? "UDP" : "TLS" ) );
             }
 
+            Metric_StartEvent( METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_0 + i );
             ret = CreateSocketContext( pCtx, STUN_ADDRESS_IPv4, NULL, &pCtx->iceServers[i].iceEndpoint, pCtx->iceServers[i].protocol, &pSocketContext );
+            Metric_EndEvent( METRIC_EVENT_HANDLE_CREATE_SOCKET_CONTEXT_0 + i );
 
             if( ret == ICE_CONTROLLER_RESULT_OK )
             {
@@ -819,6 +825,7 @@ static void AddRelayCandidates( IceControllerContext_t * pCtx )
 
                 pCtx->metrics.pendingRelayCandidateNum++;
             }
+            Metric_EndEvent( METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATE_0 + i );
         }
     }
 }
@@ -1139,7 +1146,9 @@ void IceControllerNet_AddLocalCandidates( IceControllerContext_t * pCtx )
             #if METRIC_PRINT_ENABLED
             Metric_StartEvent( METRIC_EVENT_ICE_GATHER_RELAY_CANDIDATES );
             #endif
+            Metric_StartEvent( METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATES );
             AddRelayCandidates( pCtx );
+            Metric_EndEvent( METRIC_EVENT_HANDLE_ADD_RELAY_CANDIDATES );
         }
     }
 }
