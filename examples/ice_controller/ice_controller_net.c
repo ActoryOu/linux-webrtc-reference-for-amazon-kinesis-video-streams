@@ -22,6 +22,8 @@
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <netinet/tcp.h>
 
 #include "logging.h"
 #include "ice_controller.h"
@@ -148,12 +150,13 @@ static IceControllerResult_t CreateSocketContextUdp( IceControllerContext_t * pC
     // struct sockaddr_in6 ipv6Addr;
     struct sockaddr * pSockAddress = NULL;
     socklen_t addressLength;
-    struct timeval tv = {
-        .tv_sec = 0,
-        .tv_usec = 1000
-    };
-    uint32_t sendBufferSize = 0;
+    // struct timeval tv = {
+    //     .tv_sec = 0,
+    //     .tv_usec = 1000
+    // };
+    // uint32_t sendBufferSize = 0;
     uint8_t needBinding = pBindEndpoint != NULL ? 1 : 0;
+    int fcntlFlags = 0;
 
     /* Find a free socket context. */
     if( pCtx->socketsContextsCount < ICE_CONTROLLER_MAX_LOCAL_CANDIDATE_COUNT )
@@ -236,9 +239,26 @@ static IceControllerResult_t CreateSocketContextUdp( IceControllerContext_t * pC
 
     if( ret == ICE_CONTROLLER_RESULT_OK )
     {
-        setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDBUF, &sendBufferSize, sizeof( sendBufferSize ) );
-        setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof( struct timeval ) );
-        setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof( struct timeval ) );
+        // setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDBUF, &sendBufferSize, sizeof( sendBufferSize ) );
+        // setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof( struct timeval ) );
+        // setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof( struct timeval ) );
+
+        // Set the non-blocking mode for the socket
+        fcntlFlags = fcntl( pSocketContext->socketFd, F_GETFL, 0 );
+        if( fcntlFlags < 0 )
+        {
+            LogError( ( "fcntl() failed with errno: %d", errno ) );
+            ret = ICE_CONTROLLER_RESULT_FAIL_SOCKET_CREATE;
+        }
+        else
+        {
+            fcntlFlags |= O_NONBLOCK;
+            if( fcntl( pSocketContext->socketFd, F_SETFL, fcntlFlags ) < 0 )
+            {
+                LogError( ( "fcntl() failed with errno: %d", errno ) );
+                ret = ICE_CONTROLLER_RESULT_FAIL_SOCKET_CREATE;
+            }
+        }
     }
 
     if( ret == ICE_CONTROLLER_RESULT_OK )
@@ -260,15 +280,16 @@ static IceControllerResult_t CreateSocketContextTcp( IceControllerContext_t * pC
 {
     IceControllerResult_t ret = ICE_CONTROLLER_RESULT_OK;
     IceControllerSocketContext_t * pSocketContext = NULL;
-    struct timeval tv = {
-        .tv_sec = 0,
-        .tv_usec = 1000
-    };
-    uint32_t sendBufferSize = 0;
+    // struct timeval tv = {
+    //     .tv_sec = 0,
+    //     .tv_usec = 1000
+    // };
+    // uint32_t sendBufferSize = 0;
     TlsTransportStatus_t xNetworkStatus;
     NetworkCredentials_t credentials;
     const char * pRemoteIpPos;
     char remoteIpAddr[ INET_ADDRSTRLEN ];
+    int optionValue = 0, socketResult = 0;
 
     pRemoteIpPos = inet_ntop( AF_INET,
                               pConnectEndpoint->transportAddress.address,
@@ -352,9 +373,17 @@ static IceControllerResult_t CreateSocketContextTcp( IceControllerContext_t * pC
     {
         pSocketContext->socketFd = TLS_FreeRTOS_GetSocketFd( &pSocketContext->tlsSession.xTlsNetworkContext );
 
-        setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDBUF, &sendBufferSize, sizeof( sendBufferSize ) );
-        setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof( struct timeval ) );
-        setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof( struct timeval ) );
+        // setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDBUF, &sendBufferSize, sizeof( sendBufferSize ) );
+        // setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof( struct timeval ) );
+        // setsockopt( pSocketContext->socketFd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof( struct timeval ) );
+
+        /* disable Nagle algorithm to not delay sending packets. We should have enough density to justify using it. */
+        optionValue = 1;
+        socketResult = setsockopt( pSocketContext->socketFd, IPPROTO_TCP, TCP_NODELAY, &optionValue, sizeof( optionValue ) );
+        if( socketResult < 0 )
+        {
+            LogWarn( ( "setsockopt() TCP_NODELAY failed with errno %d", errno ) );
+        }
 
         pSocketContext->socketType = ICE_CONTROLLER_SOCKET_TYPE_TLS;
         *ppOutSocketContext = pSocketContext;
