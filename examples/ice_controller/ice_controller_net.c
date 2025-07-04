@@ -1028,6 +1028,10 @@ IceControllerResult_t IceControllerNet_SendPacket( IceControllerContext_t * pCtx
         {
             /* The socket context has been closed, skip sending process. */
             LogDebug( ( "The socket has been close, skip sending." ) );
+            if( pSocketContext->pLocalCandidate != NULL )
+            {
+                LogDebug( ( "Local candidate ID: 0x%04x for closed socket.", pSocketContext->pLocalCandidate->candidateId ) );
+            }
             ret = ICE_CONTROLLER_RESULT_FAIL_SOCKET_CONTEXT_ALREADY_CLOSED;
         }
     }
