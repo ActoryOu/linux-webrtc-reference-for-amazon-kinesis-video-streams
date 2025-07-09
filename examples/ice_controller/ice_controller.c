@@ -356,6 +356,12 @@ static void ProcessLocalCandidates( IceControllerContext_t * pCtx )
             }
             else if( pSocketContext->pLocalCandidate != NULL )
             {
+                if( pSocketContext->state == ICE_CONTROLLER_SOCKET_CONTEXT_STATE_NONE )
+                {
+                    LogDebug( ( "Socket is terminated, skip this local candidate: 0x%04x.", pSocketContext->pLocalCandidate->candidateId ) );
+                    continue;
+                }
+
                 stunBufferLength = ICE_CONTROLLER_STUN_MESSAGE_BUFFER_SIZE;
 
                 iceResult = Ice_CreateNextCandidateRequest( &pCtx->iceContext,
